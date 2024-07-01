@@ -59,6 +59,9 @@ node_types:
       name:
         type: string
         required: true
+      submodel:
+        type: string
+        required: true
       application:
         type: string
         required: true

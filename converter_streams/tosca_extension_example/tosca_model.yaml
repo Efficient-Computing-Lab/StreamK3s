@@ -42,6 +42,7 @@ topology_template:
       properties:
         image: gkorod/generator:v0.7
         name: generator
+        submodel: submodel-1
         application: experiment-ais
         operator_type: producer
         persistent_volume: true
@@ -59,6 +60,7 @@ topology_template:
       properties:
         image: gkorod/grouper:v1.8
         name: grouper
+        submodel: submodel-2
         application: experiment-ais
         operator_type: subscriber
         persistent_volume: false
