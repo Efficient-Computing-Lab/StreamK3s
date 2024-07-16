@@ -1,14 +1,9 @@
 tosca_definitions_version: tosca_simple_yaml_1_2
-
 description: Application model for streams architecture
-
 imports:
-  - /definitions/custom_types.yaml
-
+- /definitions/custom_types.yaml
 topology_template:
-
   node_templates:
-
     Host-1:
       type: tosca.nodes.Compute
       capabilities:
@@ -21,7 +16,6 @@ topology_template:
           properties:
             architecture: x86_64
             type: linux
-
     Host-2:
       type: tosca.nodes.Compute
       capabilities:
@@ -34,15 +28,12 @@ topology_template:
           properties:
             architecture: x86_64
             type: linux
-
-
-
     Operator-1:
       type: Operator
       properties:
-        image: gkorod/generator:v0.7
+        image: gkorod/onnx_operator:v0.6
         name: generator
-        submodel: submodel-1
+        submodel: model.v9.onnx
         application: experiment-ais
         operator_type: producer
         persistent_volume: true
@@ -51,49 +42,31 @@ topology_template:
           properties:
             output_queue: queue-1
         port:
-          - 20766
+        - 20766
       requirements:
-        - host: Host-1
-
+      - host: Host-1
     Operator-2:
       type: Operator
       properties:
-        image: gkorod/grouper:v1.8
+        image: gkorod/onnx_operator:v0.6
         name: grouper
-        submodel: submodel-2
+        submodel: model.v9.onnx
         application: experiment-ais
         operator_type: subscriber
         persistent_volume: false
         order: 2
         dependencies:
-          - operator_name: generator
+        - operator_name: generator
         queues:
           properties:
             input_queue: queue-1
             output_queue: queue-2
         scale:
-          - rule: 1
-            condition: MessageRate = 16
-            input_queue: queue-1
-            scale: 3
+        - rule: 1
+          condition: MessageRate = 16
+          input_queue: queue-1
+          scale: 3
         port:
-          - 20766
+        - 20766
       requirements:
-        - host: Host-2
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      - host: Host-2

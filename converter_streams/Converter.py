@@ -275,23 +275,26 @@ def tosca_to_k8s(operator_list, host_list, namespace_pack):
                         'limits': {'cpu': x.get_cpu(),
                                    'memory': kube_ram,
                                    'ephemeral-storage': kube_disk}}
-                if persistent_volume:
+                else:
                     resource_yaml = {
                         'limits': {'cpu': x.get_cpu(),
                                    'memory': kube_ram}}
                     pv, pvc = create_volumes(pod_name, kube_disk, namespace_pack)
                     persistent_volumes.append(pv)
                     persistent_volumes.append(pvc)
-                ip = os.getenv("POD_IP", "ip")
-                password = os.getenv("RABBITMQ_PASSWORD", "password")
+                rabbitmq_ip = os.getenv("POD_IP", "ip")
+                rabbitmq_password = os.getenv("RABBITMQ_PASSWORD", "password")
                 queues = y.get_queues()
                 properties = queues.get("properties")
                 input_queue = properties.get("input_queue")
                 output_queue = properties.get("output_queue")
                 order = y.get_order()
-
-                configmap_list = generate_configmaps(input_queue, output_queue, order, namespace_pack, ip, password,
-                                                     configmap_list)
+                master_node_ip = os.getenv("MASTER_NODE_IP")
+                dependencies = y.get_dependencies()
+                submodel = y.get_submodel()
+                configmap_list = generate_configmaps(input_queue, output_queue, order, namespace_pack, rabbitmq_ip,
+                                                     rabbitmq_password,
+                                                     configmap_list, master_node_ip, dependencies, submodel)
                 ports = y.get_port()
                 i = 0
                 for port in ports:
@@ -353,7 +356,8 @@ def configure_instancemanager(message_dict):
         print("Instancemanager is not configured, status code:", response.status_code)
 
 
-def generate_configmaps(input_queue, output_queue, order, namespace_pack, ip, password, configmap_list):
+def generate_configmaps(input_queue, output_queue, order, namespace_pack, rabbitmq_ip, rabbitmq_password,
+                        configmap_list, master_node_ip, dependencies, submodel):
     if input_queue is not None and output_queue is not None:
         operator_configmap = {
             "kind": "ConfigMap",
@@ -364,6 +368,10 @@ def generate_configmaps(input_queue, output_queue, order, namespace_pack, ip, pa
             },
             "data": {
                 "API_PORT": "4321",
+                "MODEL_DISTRIBUTOR_IP": master_node_ip,
+                "MODEL_DISTRIBUTOR_PORT": "4443",
+                "MODEL_DISTRIBUTOR_PATH": "/download",
+                "SUBMODEL": submodel,
                 "PUBLISH_PATH": "/post_message",
                 "CONSUME_PATH": "/get_message",
             }
@@ -378,8 +386,8 @@ def generate_configmaps(input_queue, output_queue, order, namespace_pack, ip, pa
             "data": {
                 "OPERATOR_PORT": "4322",
                 "OPERATOR_PATH": "/post_message",
-                "RABBIT_IP": ip,
-                "RABBITMQ_PASSWORD": password,
+                "RABBIT_IP": rabbitmq_ip,
+                "RABBITMQ_PASSWORD": rabbitmq_password,
                 "INPUT_QUEUE": input_queue,
                 "OUTPUT_QUEUE": output_queue,
                 "TERMINATION_QUEUE": "termination-queue",
@@ -398,6 +406,10 @@ def generate_configmaps(input_queue, output_queue, order, namespace_pack, ip, pa
             },
             "data": {
                 "API_PORT": "4321",
+                "MODEL_DISTRIBUTOR_IP": master_node_ip,
+                "MODEL_DISTRIBUTOR_PORT": "4443",
+                "MODEL_DISTRIBUTOR_PATH": "/download",
+                "SUBMODEL": submodel,
                 "CONSUME_PATH": "/get_message",
 
             }
@@ -412,8 +424,8 @@ def generate_configmaps(input_queue, output_queue, order, namespace_pack, ip, pa
             "data": {
                 "OPERATOR_PORT": "4322",
                 "OPERATOR_PATH": "/post_message",
-                "RABBIT_IP": ip,
-                "RABBITMQ_PASSWORD": password,
+                "RABBIT_IP": rabbitmq_ip,
+                "RABBITMQ_PASSWORD": rabbitmq_password,
                 "INPUT_QUEUE": input_queue,
                 "TERMINATION_QUEUE": "termination-queue",
                 "APPLICATION": namespace_pack
@@ -430,6 +442,10 @@ def generate_configmaps(input_queue, output_queue, order, namespace_pack, ip, pa
             },
             "data": {
                 "API_PORT": "4321",
+                "MODEL_DISTRIBUTOR_IP": master_node_ip,
+                "MODEL_DISTRIBUTOR_PORT": "4443",
+                "MODEL_DISTRIBUTOR_PATH": "/download",
+                "SUBMODEL": submodel,
                 "PUBLISH_PATH": "/post_message",
             }
         }
@@ -444,8 +460,8 @@ def generate_configmaps(input_queue, output_queue, order, namespace_pack, ip, pa
             "data": {
                 "OPERATOR_PORT": "4322",
                 "OPERATOR_PATH": "/post_message",
-                "RABBIT_IP": ip,
-                "RABBITMQ_PASSWORD": password,
+                "RABBIT_IP": rabbitmq_ip,
+                "RABBITMQ_PASSWORD": rabbitmq_password,
                 "TERMINATION_QUEUE": "termination-queue",
                 "OUTPUT_QUEUE": output_queue,
                 "APPLICATION": namespace_pack

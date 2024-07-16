@@ -39,7 +39,7 @@ kubectl apply -f nodered-deployment.yaml
 name=$(kubectl get pods -n gui -o jsonpath='{.items[0].metadata.name}')
 kubectl wait --namespace gui --for condition=ready pod/$name --timeout=120s
 kubectl expose -n gui pod  $name --port=1880 --target-port=1880 --name=loadbalancer --type=LoadBalancer
-nodered_ip=$(kubectl get pod $name -n gui -o jsonpath='{.status.podIP}')
+nodered_ip=$(kubectl get services loadBalancer -n gui -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 sleep 60
 curl -XPUT -H "Content-type: application/json" --data-binary "@main-subflow.json" "http://${nodered_ip}:1880/flow/global"
 echo "--------------------------------------------"
@@ -53,7 +53,7 @@ echo "--------------------------------------------"
 RABBITMQ_USERNAME="user"
 RABBITMQ_PASSWORD=$(kubectl get secret mu-rabbit-rabbitmq --namespace rabbit -o jsonpath='{.data.rabbitmq-password}' | base64 --decode)
 # Create .env file and store the credentials
-pod_ip=$(kubectl get pod mu-rabbit-rabbitmq-0 -n rabbit -o jsonpath='{.status.podIP}')
+pod_ip=$(kubectl get services loadbalancer -n rabbit -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 cd ..
 cd instancemanager
 echo "RABBITMQ_USERNAME=$RABBITMQ_USERNAME" > .env
@@ -66,6 +66,9 @@ else
     # If pod IP address is not found, display a message
     echo "Pod IP Address not found for RabbitMQ."
 fi
+master_node_ip=$(hostname -I | awk '{print $1}')
+echo "MASTER_NODE_IP=$master_node_ip" >> .env
+cat .env
 cd ..
 cp instancemanager/.env converter_streams
 cd instancemanager

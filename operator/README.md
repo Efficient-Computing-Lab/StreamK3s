@@ -140,7 +140,7 @@ app.run(host="0.0.0.0", port=4322, debug=False, use_reloader=False, threaded=Fal
 Each operator needs to be dockerized and hosted in a public repository. Otherwise, our Stream Processing Platform will not be able to access it.
 
 ``` shell
-docker build -f Dockerfile -t operator:v0.1
+docker build -f Dockerfile -t operator:v0.1 .
 docker tag operator:v0.1 gkorod/operator:v0.1
 docker push gkorod/operator:v0.1
 ```
