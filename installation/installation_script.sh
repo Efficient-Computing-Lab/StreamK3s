@@ -1,3 +1,4 @@
+#!/bin/bash
 echo "--------------------------------------------"
 echo "Installing Stream Processing Platform"
 echo "--------------------------------------------"
@@ -6,18 +7,27 @@ echo "Requirements"
 echo "--------------------------------------------"
 apt update
 apt install snapd
-apt-get install python3.6
-apt install python3-pip
 sudo apt install pkg-config
 sudo apt install libsystemd-dev
-sudo -H pip3 install oyaml
-sudo -H pip3 install hurry.filesize
-sudo -H pip3 install PyYAML
-sudo -H pip3 install flask
-sudo -H pip3 install tosca-parser
-sudo -H pip3 install pika
-sudo -H pip3 install python-dotenv
-sudo -H pip3 install systemd-python
+mkdir -p /opt/miniconda3
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /opt/miniconda3/miniconda.sh
+bash /opt/miniconda3/miniconda.sh -b -u -p /opt/miniconda3
+source /opt/miniconda3/etc/profile.d/conda.sh
+
+# Add Conda-Forge channel for package installation
+conda config --add channels conda-forge
+conda config --set channel_priority strict
+
+# Create a conda environment with Python 3.6
+echo "Creating Conda environment with Python 3.6..."
+conda create --name myenv python=3.6 -y
+
+# Activate the environment
+echo "Activating the conda environment 'myenv'..."
+conda activate myenv
+
+echo "Installing Python dependencies"
+pip install -r requirements.txt
 snap install helm --classic
 echo "--------------------------------------------"
 echo "RabbitMQ"

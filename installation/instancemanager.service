@@ -4,6 +4,6 @@ After=multi-user.target
 [Service]
 Type=simple
 Restart=always
-ExecStart=/usr/bin/python3 /opt/Stream-Processing/instancemanager/main.py
+ExecStart=/opt/miniconda3/envs/myenv/bin/python3 /opt/Stream-Processing/instancemanager/main.py
 [Install]
 WantedBy=multi-user.target

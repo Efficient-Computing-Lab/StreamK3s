@@ -74,6 +74,10 @@ topology_template:
             condition: MessageRate = 16
             input_queue: queue-1
             scale: 3
+          - rule: 2
+            condition: QueueLength = 16
+            input_queue: queue-1
+            scale: 3
         port:
           - 20766
       requirements:

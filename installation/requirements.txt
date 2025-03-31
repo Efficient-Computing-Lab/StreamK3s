@@ -1,0 +1,8 @@
+oyaml
+hurry.filesize
+PyYAML
+flask
+tosca-parser
+pika
+python-dotenv
+systemd-python

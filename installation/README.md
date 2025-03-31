@@ -1,6 +1,6 @@
 ## Description
 
-Here you can find scripts to install and remove RabbitMQ, NodeRED, Converter and Instance Manager
+Here you can find scripts to install and remove MiniConda, RabbitMQ, NodeRED, Converter and Instance Manager
 
 ## For installation run
 ```shell

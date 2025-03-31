@@ -21,6 +21,7 @@ kubectl delete -f nodered-deployment.yaml
 kubectl delete -f nodered-pvc.yaml
 kubectl delete -f nodered-pv.yaml
 kubectl delete -f nodered-namespace.yaml
+rm -r /opt/NodeRED/
 echo "--------------------------------------------"
 echo "Stopping KEDA"
 echo "--------------------------------------------"
@@ -29,3 +30,6 @@ echo "--------------------------------------------"
 echo "Stopping RabbitMQ"
 echo "--------------------------------------------"
 kubectl delete namespace rabbit
+echo "Stopping Miniconda"
+echo "--------------------------------------------"
+/opt/miniconda3/uninstall.sh
