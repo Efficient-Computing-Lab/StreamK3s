@@ -25,9 +25,9 @@ def write_rules_config(operatorlist):
             for rule in rule_list:
                 rule['deployment'] = deployment
                 logging.info(rule)
-                name = rule.get('deployment')
-                name = name +"scale-rule-"+str(rule.get('rule'))
-                logging.info(name)
+                deployment_name = rule.get('deployment')
+                scale_name = deployment_name +"scale-rule-"+str(rule.get('rule'))
+                logging.info(scale_name)
                 condition = rule.get('condition')
                 scale_up = rule.get('scale')
                 if rule.get('output_queue'):
@@ -41,8 +41,8 @@ def write_rules_config(operatorlist):
                 value = int(re.search(r'\d+', condition).group())
                 scale_object = {'apiVersion': 'keda.sh/v1alpha1',
                                 'kind': 'ScaledObject',
-                                'metadata': {'name': name, 'namespace': namespace},
-                                'spec': {'scaleTargetRef': {'name': name}, 'pollingInterval': 5, 'cooldownPeriod': 10,
+                                'metadata': {'name': scale_name, 'namespace': namespace},
+                                'spec': {'scaleTargetRef': {'name': deployment_name}, 'pollingInterval': 5, 'cooldownPeriod': 10,
                                          'minReplicaCount': 1, 'maxReplicaCount': scale_up,
                                          'triggers': [
                                              {'type': 'rabbitmq',
