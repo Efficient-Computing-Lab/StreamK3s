@@ -39,7 +39,7 @@ tosca_definitions_version: tosca_simple_yaml_1_2
 description: Application model for streams architecture
 
 imports:
-  - definitions/custom_types.yaml
+  - /definitions/custom_types.yaml
 
 topology_template:
 
@@ -64,20 +64,23 @@ topology_template:
         host:
           properties:
             num_cpus: 1
-            mem_size: 2GB
+            mem_size: 512MB
             disk_size: 2GB
         os:
           properties:
             architecture: x86_64
             type: linux
 
+
+
     Operator-1:
       type: Operator
       properties:
-        image: gkorod/generator:v0.3
+        image: gkorod/generator:v0.7
         name: generator
         application: experiment-ais
         operator_type: producer
+        persistent_volume: true
         order: 1
         queues:
           properties:
@@ -90,11 +93,14 @@ topology_template:
     Operator-2:
       type: Operator
       properties:
-        image: gkorod/grouper:v0.1
+        image: gkorod/grouper:v1.8
         name: grouper
         application: experiment-ais
         operator_type: subscriber
+        persistent_volume: false
         order: 2
+        dependencies:
+          - operator_name: generator
         queues:
           properties:
             input_queue: queue-1
@@ -104,12 +110,25 @@ topology_template:
             condition: MessageRate = 16
             input_queue: queue-1
             scale: 3
+          - rule: 2
+            condition: QueueLength = 16
+            input_queue: queue-1
+            scale: 3
         port:
           - 20766
       requirements:
         - host: Host-2
 ```
-The above example can be also found <a href=https://github.com/f-coda/Stream-Processing/tree/main/converter_streams/tosca_extension_example>here</a>
+The above example can be also found <a href=https://github.com/f-coda/Stream-Processing/tree/main/converter_streams/tosca_extension_example>here</a>.
+
+**Important Note**: For cases where multiple scaling rules apply to the same operator—such as Operator-2 
+in the example above—ensure that the scale value is consistent across all rules. This restriction exists
+because the Converter generates KEDA ScaledObjects, which in turn create Kubernetes HPAs. 
+Both definitions must share the same maxReplica value. Kubernetes does not support different maxReplica values
+for each rule within the same HPA. Additionally, while Kubernetes may technically allow the creation
+of multiple HPAs for the same deployment, this is generally considered bad practice and 
+can lead to undesirable, hard-to-debug scaling behavior. It is recommended to use only one HPA per deployment.
+
 ### Converter
 The Converter component functions as a reasoner tool capable of both reading and generating Kubernetes definition YAML files. It is seamlessly integrated with the Sommelier Validator. Initially, Sommelier Validator is employed to validate our TOSCA extension. Upon confirming the validity of the provided model, Converter is then able to generate the necessary files.
 

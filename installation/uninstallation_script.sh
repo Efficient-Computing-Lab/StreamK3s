@@ -33,3 +33,4 @@ kubectl delete namespace rabbit
 echo "Stopping Miniconda"
 echo "--------------------------------------------"
 /opt/miniconda3/uninstall.sh
+rm -r /root/.kube/
